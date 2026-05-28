@@ -1,0 +1,1421 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" /><title>Trip Tracker</title><link rel="preconnect" href="https://fonts.googleapis.com" /><link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet" /><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" /><style>*,
+*::before,
+*::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0
+}
+
+:root {
+    --bg: #060810;
+    --surf: rgba(255, 255, 255, .038);
+    --bdr: rgba(255, 255, 255, .08);
+    --cyan: #00f0ff;
+    --violet: #a855f7;
+    --blue: #4f8ef7;
+    --danger: #ff4d6d;
+    --success: #00e5a0;
+    --warn: #f59e0b;
+    --text: #e8eeff;
+    --muted: rgba(160, 175, 220, .55);
+    --ff: 'Outfit', sans-serif;
+    --fm: 'JetBrains Mono', monospace;
+    --rc: 22px;
+    --ri: 13px;
+    --rb: 12px;
+    --ease: cubic-bezier(.4, 0, .2, 1);
+    --spring: cubic-bezier(.34, 1.56, .64, 1);
+}
+
+html {
+    scroll-behavior: smooth
+}
+
+body {
+    font-family: var(--ff);
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 48px 16px 96px;
+    overflow-x: hidden
+}
+
+.bg-layer {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 0
+}
+
+.bg-layer::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse 70% 55% at 15% 5%, rgba(0, 240, 255, .065) 0%, transparent 65%),
+        radial-gradient(ellipse 55% 50% at 85% 85%, rgba(168, 85, 247, .08) 0%, transparent 60%),
+        radial-gradient(ellipse 45% 40% at 55% 45%, rgba(79, 142, 247, .05) 0%, transparent 55%);
+    animation: ambPulse 16s ease-in-out infinite alternate
+}
+
+.bg-layer::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image: linear-gradient(rgba(0, 240, 255, .022) 1px, transparent 1px), linear-gradient(90deg, rgba(0, 240, 255, .022) 1px, transparent 1px);
+    background-size: 56px 56px;
+    animation: gridDrift 30s linear infinite
+}
+
+@keyframes ambPulse {
+    0% {
+        opacity: .7;
+        transform: scale(1)
+    }
+
+    100% {
+        opacity: 1;
+        transform: scale(1.06)
+    }
+}
+
+@keyframes gridDrift {
+    from {
+        transform: translateY(0)
+    }
+
+    to {
+        transform: translateY(56px)
+    }
+}
+
+.app {
+    position: relative;
+    z-index: 10;
+    width: 100%;
+    max-width: 680px;
+    display: flex;
+    flex-direction: column;
+    gap: 18px
+}
+
+/* CARD */
+.card {
+    background: var(--surf);
+    border: 1px solid var(--bdr);
+    border-radius: var(--rc);
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+    padding: 26px 28px;
+    position: relative;
+    overflow: hidden;
+    transition: border-color .3s, box-shadow .3s;
+    box-shadow: 0 12px 40px rgba(0, 0, 0, .45)
+}
+
+.card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 10%;
+    right: 10%;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, .13), transparent);
+    pointer-events: none
+}
+
+.card:hover {
+    border-color: rgba(0, 240, 255, .13);
+    box-shadow: 0 16px 52px rgba(0, 0, 0, .55)
+}
+
+/* HEADER */
+.header {
+    text-align: center;
+    padding: 34px 28px 28px
+}
+
+.hicon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 58px;
+    height: 58px;
+    border-radius: 18px;
+    background: linear-gradient(135deg, rgba(0, 240, 255, .15), rgba(168, 85, 247, .15));
+    border: 1px solid rgba(0, 240, 255, .25);
+    font-size: 22px;
+    color: var(--cyan);
+    margin-bottom: 16px;
+    box-shadow: 0 0 24px rgba(0, 240, 255, .18)
+}
+
+.header h1 {
+    font-size: clamp(21px, 5vw, 32px);
+    font-weight: 800;
+    letter-spacing: -.6px;
+    background: linear-gradient(130deg, #fff 25%, var(--cyan) 60%, var(--violet) 90%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 6px
+}
+
+.header p {
+    color: var(--muted);
+    font-size: 13px;
+    font-weight: 300
+}
+
+/* SECTION LABEL */
+.slbl {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    color: var(--cyan);
+    margin-bottom: 18px
+}
+
+.slbl::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: linear-gradient(90deg, rgba(0, 240, 255, .3), transparent)
+}
+
+/* FORM */
+.frow {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+    margin-bottom: 14px
+}
+
+.frow3 {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 14px;
+    margin-bottom: 14px
+}
+
+.field {
+    display: flex;
+    flex-direction: column;
+    gap: 6px
+}
+
+.field label {
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1.4px;
+    color: var(--muted)
+}
+
+.iw {
+    position: relative
+}
+
+.iw i.ico {
+    position: absolute;
+    left: 13px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 13px;
+    color: var(--muted);
+    pointer-events: none;
+    transition: color .25s
+}
+
+.iw input {
+    width: 100%;
+    background: rgba(255, 255, 255, .05);
+    border: 1px solid rgba(255, 255, 255, .09);
+    border-radius: var(--ri);
+    padding: 11px 13px 11px 37px;
+    font-family: var(--ff);
+    font-size: 14px;
+    font-weight: 400;
+    color: var(--text);
+    outline: none;
+    transition: border-color .25s, background .25s, box-shadow .25s;
+    caret-color: var(--cyan);
+    -webkit-appearance: none;
+    appearance: none
+}
+
+.iw input[type=number]::-webkit-inner-spin-button,
+.iw input[type=number]::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0
+}
+
+.iw input[type=number] {
+    -moz-appearance: textfield
+}
+
+.iw input::placeholder {
+    color: rgba(130, 145, 185, .35)
+}
+
+.iw input:focus {
+    border-color: rgba(0, 240, 255, .4);
+    background: rgba(0, 240, 255, .055);
+    box-shadow: 0 0 0 3px rgba(0, 240, 255, .09)
+}
+
+.iw:focus-within i.ico {
+    color: var(--cyan)
+}
+
+/* BUTTONS */
+.btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    border: none;
+    cursor: pointer;
+    font-family: var(--ff);
+    font-weight: 600;
+    font-size: 14px;
+    letter-spacing: .3px;
+    border-radius: var(--rb);
+    padding: 12px 20px;
+    transition: transform .22s var(--spring), box-shadow .22s var(--ease), background .2s;
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+    position: relative;
+    overflow: hidden
+}
+
+.btn:active {
+    transform: scale(.97) translateY(1px) !important
+}
+
+.btn-primary {
+    width: 100%;
+    background: linear-gradient(130deg, #0891b2, #6d28d9);
+    color: #fff;
+    box-shadow: 0 4px 18px rgba(0, 240, 255, .18), 0 2px 8px rgba(0, 0, 0, .4);
+    margin-top: 4px
+}
+
+.btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 28px rgba(0, 240, 255, .32);
+    background: linear-gradient(130deg, #06b6d4, #7c3aed)
+}
+
+.btn-ghost {
+    background: rgba(255, 255, 255, .05);
+    color: var(--muted);
+    border: 1px solid rgba(255, 255, 255, .1);
+    font-size: 13px;
+    padding: 10px 16px
+}
+
+.btn-ghost:hover {
+    background: rgba(255, 255, 255, .09);
+    color: var(--text);
+    border-color: rgba(0, 240, 255, .2)
+}
+
+.btn-danger {
+    background: rgba(255, 77, 109, .1);
+    color: var(--danger);
+    border: 1px solid rgba(255, 77, 109, .22);
+    font-size: 13px;
+    padding: 10px 16px
+}
+
+.btn-danger:hover {
+    background: rgba(255, 77, 109, .2);
+    border-color: rgba(255, 77, 109, .45);
+    transform: translateY(-1px)
+}
+
+/* ===== METER CARD ===== */
+.meter-card {
+    background: linear-gradient(140deg, rgba(0, 240, 255, .05) 0%, rgba(168, 85, 247, .05) 100%);
+    border: 1px solid rgba(0, 240, 255, .2);
+    border-radius: var(--rc);
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+    padding: 26px 28px;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 0 60px rgba(0, 240, 255, .06), 0 18px 45px rgba(0, 0, 0, .42);
+    transition: border-color .3s, box-shadow .3s
+}
+
+.meter-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 8%;
+    right: 8%;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--cyan), transparent);
+    opacity: .5;
+    pointer-events: none
+}
+
+.meter-card:hover {
+    border-color: rgba(0, 240, 255, .3);
+    box-shadow: 0 0 80px rgba(0, 240, 255, .1), 0 22px 55px rgba(0, 0, 0, .5)
+}
+
+/* KM display row */
+.km-display {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    margin-bottom: 20px
+}
+
+.km-box {
+    background: rgba(255, 255, 255, .04);
+    border: 1px solid rgba(255, 255, 255, .08);
+    border-radius: 16px;
+    padding: 14px 12px;
+    text-align: center;
+    transition: background .25s, border-color .25s, transform .25s var(--ease)
+}
+
+.km-box:hover {
+    background: rgba(255, 255, 255, .07);
+    border-color: rgba(0, 240, 255, .18);
+    transform: translateY(-2px)
+}
+
+.km-lbl {
+    font-size: 9px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1.6px;
+    color: var(--muted);
+    margin-bottom: 8px
+}
+
+.km-val {
+    font-family: var(--fm);
+    font-size: clamp(16px, 3.2vw, 22px);
+    font-weight: 600;
+    line-height: 1
+}
+
+.km-val.start {
+    background: linear-gradient(135deg, #fff, var(--blue));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text
+}
+
+.km-val.used {
+    background: linear-gradient(135deg, #fff, var(--cyan));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text
+}
+
+.km-val.left {
+    background: linear-gradient(135deg, #fff, var(--success));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text
+}
+
+.km-val.over {
+    background: linear-gradient(135deg, var(--warn), var(--danger));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text
+}
+
+.km-sub {
+    font-size: 10px;
+    color: var(--muted);
+    margin-top: 4px
+}
+
+/* Progress bar */
+.bar-wrap {
+    margin-bottom: 8px
+}
+
+.bar-track {
+    height: 16px;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, .06);
+    border: 1px solid rgba(255, 255, 255, .08);
+    overflow: hidden;
+    position: relative
+}
+
+.bar-fill {
+    height: 100%;
+    border-radius: 999px;
+    background: linear-gradient(90deg, var(--cyan), var(--violet));
+    transition: width .7s var(--spring), background .4s;
+    position: relative
+}
+
+.bar-fill::after {
+    content: '';
+    position: absolute;
+    top: 2px;
+    left: 8px;
+    right: 8px;
+    height: 5px;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, .25);
+    pointer-events: none
+}
+
+.bar-fill.warn {
+    background: linear-gradient(90deg, var(--warn), #f97316)
+}
+
+.bar-fill.over {
+    background: linear-gradient(90deg, #f97316, var(--danger))
+}
+
+.bar-meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 8px
+}
+
+.bar-pct {
+    font-family: var(--fm);
+    font-size: 20px;
+    font-weight: 600;
+    background: linear-gradient(135deg, #fff, var(--cyan));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text
+}
+
+.bar-pct.warn {
+    background: linear-gradient(135deg, var(--warn), #f97316);
+    -webkit-background-clip: text;
+    background-clip: text
+}
+
+.bar-pct.over {
+    background: linear-gradient(135deg, #f97316, var(--danger));
+    -webkit-background-clip: text;
+    background-clip: text
+}
+
+.bar-status {
+    font-size: 12px;
+    color: var(--muted);
+    text-align: right;
+    line-height: 1.5
+}
+
+.bar-status b {
+    display: block;
+    font-size: 13px;
+    color: var(--text);
+    font-weight: 600
+}
+
+/* Meter log list */
+.log-list {
+    display: flex;
+    flex-direction: column;
+    gap: 9px;
+    margin-top: 14px
+}
+
+.log-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: rgba(255, 255, 255, .035);
+    border: 1px solid rgba(255, 255, 255, .06);
+    border-radius: 14px;
+    padding: 12px 14px;
+    animation: slideIn .36s var(--spring) both;
+    transition: background .25s, border-color .25s, transform .25s
+}
+
+.log-item:hover {
+    background: rgba(255, 255, 255, .06);
+    border-color: rgba(0, 240, 255, .14);
+    transform: translateX(3px)
+}
+
+.log-num {
+    width: 36px;
+    height: 36px;
+    border-radius: 11px;
+    background: linear-gradient(135deg, rgba(0, 240, 255, .15), rgba(168, 85, 247, .18));
+    border: 1px solid rgba(0, 240, 255, .15);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--fm);
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--cyan);
+    flex-shrink: 0
+}
+
+.log-info {
+    flex: 1;
+    min-width: 0
+}
+
+.log-title {
+    font-size: 13.5px;
+    font-weight: 600;
+    color: var(--text)
+}
+
+.log-sub {
+    font-size: 11px;
+    color: var(--muted);
+    margin-top: 2px
+}
+
+.log-km {
+    font-family: var(--fm);
+    font-size: 15px;
+    font-weight: 600;
+    background: linear-gradient(135deg, #e0f7ff, var(--cyan));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    white-space: nowrap;
+    flex-shrink: 0;
+    margin-right: 8px
+}
+
+/* ===== EXPENSE LIST ===== */
+#exp-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    min-height: 10px
+}
+
+.empty-state {
+    text-align: center;
+    padding: 28px 0 10px;
+    color: var(--muted);
+    font-size: 13px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px
+}
+
+.empty-state i {
+    font-size: 28px;
+    opacity: .22
+}
+
+.exp-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: rgba(255, 255, 255, .038);
+    border: 1px solid rgba(255, 255, 255, .065);
+    border-radius: 16px;
+    padding: 12px 14px;
+    position: relative;
+    overflow: hidden;
+    animation: slideIn .38s var(--spring) both;
+    transition: transform .25s, background .25s, border-color .25s, box-shadow .25s
+}
+
+.exp-item::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 4px;
+    bottom: 4px;
+    width: 3px;
+    background: linear-gradient(180deg, var(--cyan), var(--violet));
+    border-radius: 4px;
+    opacity: .75
+}
+
+.exp-item:hover {
+    transform: translateX(3px) scale(1.01);
+    background: rgba(255, 255, 255, .06);
+    border-color: rgba(0, 240, 255, .15)
+}
+
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateX(-16px) scale(.97)
+    }
+
+    to {
+        opacity: 1;
+        transform: translateX(0) scale(1)
+    }
+}
+
+.avatar {
+    width: 38px;
+    height: 38px;
+    border-radius: 12px;
+    background: linear-gradient(135deg, rgba(0, 240, 255, .18), rgba(168, 85, 247, .22));
+    border: 1px solid rgba(0, 240, 255, .18);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    font-weight: 800;
+    color: var(--cyan);
+    flex-shrink: 0;
+    text-transform: uppercase
+}
+
+.iinfo {
+    flex: 1;
+    min-width: 0
+}
+
+.iname {
+    font-size: 14px;
+    font-weight: 600;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis
+}
+
+.idesc {
+    font-size: 11px;
+    color: var(--muted);
+    margin-top: 2px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis
+}
+
+.iamt {
+    font-family: var(--fm);
+    font-size: 15px;
+    font-weight: 600;
+    background: linear-gradient(135deg, #e0f7ff, var(--cyan));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    white-space: nowrap;
+    flex-shrink: 0;
+    margin-right: 8px
+}
+
+.del-btn {
+    background: rgba(255, 77, 109, .08);
+    border: 1px solid rgba(255, 77, 109, .14);
+    color: rgba(255, 77, 109, .5);
+    width: 30px;
+    height: 30px;
+    border-radius: 9px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all .2s var(--spring);
+    flex-shrink: 0;
+    font-size: 12px
+}
+
+.del-btn:hover {
+    background: rgba(255, 77, 109, .18);
+    border-color: rgba(255, 77, 109, .4);
+    color: var(--danger);
+    transform: scale(1.12)
+}
+
+.del-btn:active {
+    transform: scale(.9)
+}
+
+.list-footer {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 12px
+}
+
+/* ===== SUMMARY ===== */
+.sum-card {
+    background: linear-gradient(140deg, rgba(0, 240, 255, .055), rgba(168, 85, 247, .055), rgba(79, 142, 247, .045));
+    border: 1px solid rgba(0, 240, 255, .18);
+    border-radius: var(--rc);
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+    padding: 24px 26px;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 0 60px rgba(0, 240, 255, .07), 0 18px 45px rgba(0, 0, 0, .42)
+}
+
+.sum-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 8%;
+    right: 8%;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--cyan), transparent);
+    opacity: .55;
+    pointer-events: none
+}
+
+.sum-card:hover {
+    border-color: rgba(0, 240, 255, .28)
+}
+
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    margin-top: 6px
+}
+
+.sbox {
+    background: rgba(255, 255, 255, .04);
+    border: 1px solid rgba(255, 255, 255, .07);
+    border-radius: 14px;
+    padding: 14px 10px;
+    text-align: center;
+    transition: background .25s, border-color .25s, transform .25s
+}
+
+.sbox:hover {
+    background: rgba(255, 255, 255, .07);
+    border-color: rgba(0, 240, 255, .18);
+    transform: translateY(-2px)
+}
+
+.slbl2 {
+    font-size: 9px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1.6px;
+    color: var(--muted);
+    margin-bottom: 8px
+}
+
+.sval {
+    font-family: var(--fm);
+    font-size: clamp(15px, 3.2vw, 21px);
+    font-weight: 600;
+    line-height: 1
+}
+
+.sval.total {
+    background: linear-gradient(135deg, #fff, var(--cyan));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text
+}
+
+.sval.split {
+    background: linear-gradient(135deg, #fff, var(--violet));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text
+}
+
+.sval.people {
+    background: linear-gradient(135deg, #fff, var(--blue));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text
+}
+
+.ssub {
+    font-size: 10px;
+    color: var(--muted);
+    margin-top: 4px
+}
+
+/* TOAST */
+#toast {
+    position: fixed;
+    bottom: 26px;
+    left: 50%;
+    transform: translateX(-50%) translateY(90px);
+    background: rgba(8, 12, 28, .95);
+    border: 1px solid rgba(0, 240, 255, .28);
+    border-radius: 13px;
+    padding: 10px 18px;
+    font-family: var(--ff);
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text);
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    z-index: 9999;
+    opacity: 0;
+    transition: transform .4s var(--spring), opacity .3s;
+    backdrop-filter: blur(18px);
+    box-shadow: 0 8px 28px rgba(0, 0, 0, .55);
+    white-space: nowrap;
+    pointer-events: none
+}
+
+#toast.show {
+    transform: translateX(-50%) translateY(0);
+    opacity: 1;
+    pointer-events: auto
+}
+
+#t-undo:hover {
+    background: rgba(255, 255, 255, .15) !important;
+    border-color: rgba(0, 240, 255, .3) !important
+}
+
+#t-undo:active {
+    transform: scale(.95) !important
+}
+
+@media(max-width:520px) {
+
+    .frow,
+    .frow3,
+    .km-display,
+    .stats-grid {
+        grid-template-columns: 1fr 1fr
+    }
+
+    .km-display {
+        grid-template-columns: 1fr 1fr 1fr
+    }
+
+    .card,
+    .meter-card,
+    .sum-card {
+        padding: 20px 16px
+    }
+
+    .header {
+        padding: 26px 16px 22px
+    }
+}
+
+@media(max-width:360px) {
+
+    .frow3,
+    .km-display {
+        grid-template-columns: 1fr 1fr
+    }
+}
+
+</style></head><body><div class="bg-layer" aria-hidden="true"></div><div id="toast"><i id="t-ico" class="fa-solid fa-circle-check"></i><span id="t-msg"></span><button id="t-undo" style="display:none; background:rgba(255,255,255,.1); border:1px solid rgba(255,255,255,.2); color:var(--text); border-radius:6px; padding:4px 10px; font-size:12px; margin-left:10px; cursor:pointer; font-family:var(--ff); transition:all .2s;">Undo</button></div><main class="app"><!-- HEADER --><div class="card header"><div class="hicon"><i class="fa-solid fa-road"></i></div><h1>Trip Tracker</h1><p>Vehicle meter tracking &amp;
+expense splitting — all in one</p></div><!--=====VEHICLE METER TRACKER=====--><div class="meter-card"><div class="slbl"><i class="fa-solid fa-gauge-high"></i>Vehicle Meter Tracker</div><!-- KM Summary boxes --><div class="km-display"><div class="km-box"><div class="km-lbl">Start Reading</div><div class="km-val start" id="disp-start">—</div><div class="km-sub">odometer km</div></div><div class="km-box"><div class="km-lbl">KMs Used</div><div class="km-val used" id="disp-used">0</div><div class="km-sub">of allowed</div></div><div class="km-box"><div class="km-lbl">KMs Left</div><div class="km-val left" id="disp-left">—</div><div class="km-sub">remaining</div></div></div><!-- Progress bar --><div class="bar-wrap" id="bar-section" style="display:none"><div class="bar-track"><div class="bar-fill" id="bar-fill" style="width:0%"></div></div><div class="bar-meta"><div class="bar-pct" id="bar-pct">0%</div><div class="bar-status" id="bar-status"></div></div></div><!-- Log a reading --><div class="slbl" style="margin-top:18px"><i class="fa-solid fa-plus"></i>Log a Reading</div><div class="frow3" style="margin-bottom:14px"><div class="field"><label>Label</label><div class="iw"><i class="fa-solid fa-tag ico"></i><input type="text" id="m-label" placeholder="e.g. Start, Day 2..." maxlength="24" /></div></div><div class="field"><label>Odometer (km)</label><div class="iw"><i class="fa-solid fa-gauge ico"></i><input type="number" id="m-reading" placeholder="e.g. 54280" min="0" /></div></div><div class="field"><label>Allowed KMs</label><div class="iw"><i class="fa-solid fa-route ico"></i><input type="number" id="m-allowed" placeholder="e.g. 2000" min="1" /></div></div></div><button class="btn btn-primary" id="btn-log-meter"><i class="fa-solid fa-circle-plus"></i>Log Reading </button><!-- Log list --><div class="log-list" id="meter-log"></div><div style="display:flex;justify-content:flex-end;margin-top:12px"><button class="btn btn-danger" id="btn-clear-meter" style="display:none"><i class="fa-solid fa-trash-can"></i>Reset Meter </button></div></div><!--=====ADD EXPENSE=====--><div class="card"><div class="slbl"><i class="fa-solid fa-plus"></i>Add Expense</div><div class="frow"><div class="field"><label>Person's Name</label>
+ <div class="iw"><i class="fa-solid fa-user ico"></i><input type="text" id="e-name" placeholder="e.g. Rahul" maxlength="32" autocomplete="off" /></div></div><div class="field"><label>Amount (₹)</label><div class="iw"><i class="fa-solid fa-indian-rupee-sign ico"></i><input type="number" id="e-amount" placeholder="0.00" min="0.01" step="0.01" /></div></div></div><div class="field" style="margin-bottom:14px"><label>Description <span style="opacity:.35;font-size:8px;letter-spacing:1px">OPTIONAL</span></label><div class="iw"><i class="fa-solid fa-tag ico"></i><input type="text" id="e-desc" placeholder="e.g. Dinner, Hotel, Petrol..." maxlength="60" /></div></div><button class="btn btn-primary" id="btn-add-exp"><i class="fa-solid fa-circle-plus"></i>Add Expense </button></div><!-- EXPENSE LIST --><div class="card"><div class="slbl"><i class="fa-solid fa-receipt"></i>Expenses</div><div id="exp-list"></div><div class="list-footer"><button class="btn btn-danger" id="btn-clear-exp" style="display:none"><i class="fa-solid fa-trash-can"></i>Clear All </button></div></div><!-- SUMMARY --><div class="sum-card"><div class="slbl" style="color:var(--cyan)"><i class="fa-solid fa-chart-pie"></i>Summary</div><div class="stats-grid"><div class="sbox"><div class="slbl2">Total Spent</div><div class="sval total" id="s-total">₹0</div><div class="ssub">combined</div></div><div class="sbox"><div class="slbl2">Per Person</div><div class="sval split" id="s-split">₹0</div><div class="ssub">equal share</div></div><div class="sbox"><div class="slbl2">People</div><div class="sval people" id="s-people">0</div><div class="ssub">unique</div></div></div></div></main><script>'use strict';
+/* ---- State ---- */
+var meterLogs=[]; // [{id, label, reading, allowed}]
+var expenses=[]; // [{id, name, amount, desc}]
+var _prevState=null;
+var _undoAction=null;
+
+function saveStateForUndo() {
+    _prevState= {
+        meterLogs: JSON.parse(JSON.stringify(meterLogs)),
+            expenses: JSON.parse(JSON.stringify(expenses))
+    }
+
+    ;
+}
+
+function performUndo() {
+    if (_prevState) {
+        meterLogs=_prevState.meterLogs;
+        expenses=_prevState.expenses;
+        save();
+        renderAll();
+        toast('Action undone.', 'info');
+        _prevState=null;
+    }
+}
+
+/* ---- Persist & Backend Sync ---- */
+// Replace this URL with your hosted database API (e.g. Firebase or Node Server)
+var API_URL = '';
+
+async function load() {
+    try {
+        if (API_URL) {
+            var res = await fetch(API_URL);
+            if (res.ok) {
+                var d = await res.json();
+                meterLogs = d.meterLogs || [];
+                expenses = d.expenses || [];
+                return renderAll();
+            }
+        }
+        loadLocal();
+    } catch(e) {
+        loadLocal();
+    }
+}
+
+function loadLocal() {
+    try {
+        var d = JSON.parse(localStorage.getItem('trip_v5') || '{}');
+        meterLogs = d.meterLogs || [];
+        expenses = d.expenses || [];
+    } catch(e) {
+        meterLogs = [];
+        expenses = [];
+    }
+    renderAll();
+}
+
+async function save() {
+    localStorage.setItem('trip_v5', JSON.stringify({
+        meterLogs: meterLogs, expenses: expenses
+    }));
+    
+    if (API_URL) {
+        try {
+            await fetch(API_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ meterLogs: meterLogs, expenses: expenses })
+            });
+        } catch (e) {
+            console.warn('Sync failed');
+        }
+    }
+}
+
+/* ---- DOM ---- */
+var $ =function(id) {
+    return document.getElementById(id);
+}
+
+;
+var dispStart=$('disp-start');
+var dispUsed=$('disp-used');
+var dispLeft=$('disp-left');
+var barSection=$('bar-section');
+var barFill=$('bar-fill');
+var barPct=$('bar-pct');
+var barStatus=$('bar-status');
+var mLabel=$('m-label');
+var mReading=$('m-reading');
+var mAllowed=$('m-allowed');
+var btnLogMeter=$('btn-log-meter');
+var btnClrMeter=$('btn-clear-meter');
+var meterLog=$('meter-log');
+
+var eName=$('e-name');
+var eAmount=$('e-amount');
+var eDesc=$('e-desc');
+var btnAddExp=$('btn-add-exp');
+var btnClrExp=$('btn-clear-exp');
+var expList=$('exp-list');
+
+var sTotal=$('s-total');
+var sSplit=$('s-split');
+var sPeople=$('s-people');
+
+var toastEl=$('toast');
+var tMsg=$('t-msg');
+var tIco=$('t-ico');
+var _toastTmr;
+
+/* ---- Init ---- */
+window.addEventListener('DOMContentLoaded', function() {
+        load();
+
+        btnLogMeter.addEventListener('click', handleLogMeter);
+        btnClrMeter.addEventListener('click', handleClrMeter);
+        btnAddExp.addEventListener('click', handleAddExp);
+        btnClrExp.addEventListener('click', handleClrExp);
+
+        var tUndoBtn=$('t-undo');
+
+        if (tUndoBtn) {
+            tUndoBtn.addEventListener('click', function() {
+                    if (_undoAction) _undoAction();
+                    toastEl.classList.remove('show');
+                });
+        }
+
+        [mLabel, mReading, mAllowed].forEach(function(el) {
+                el.addEventListener('keydown', function(e) {
+                        if(e.key==='Enter') handleLogMeter();
+                    });
+            });
+
+        [eName, eAmount, eDesc].forEach(function(el) {
+                el.addEventListener('keydown', function(e) {
+                        if(e.key==='Enter') handleAddExp();
+                    });
+            });
+    });
+
+/* ---- Meter handlers ---- */
+function handleLogMeter() {
+    var label=mLabel.value.trim() || ('Reading ' + (meterLogs.length + 1));
+    var reading=parseFloat(mReading.value);
+    var allowed=parseFloat(mAllowed.value);
+
+    if (isNaN(reading) || reading < 0) {
+        shake(mReading);
+        toast('Enter a valid odometer reading.', 'warn');
+        return;
+    }
+
+    // allowed: use existing if not entered
+    var useAllowed=( !isNaN(allowed) && allowed > 0) ? allowed : (meterLogs.length > 0 ? meterLogs[0].allowed : NaN);
+
+    if (isNaN(useAllowed)) {
+        shake(mAllowed);
+        toast('Enter allowed KMs for the first entry.', 'warn');
+        return;
+    }
+
+    saveStateForUndo();
+
+    meterLogs.push({
+        id: Date.now(), label: label, reading: reading, allowed: useAllowed
+    });
+save();
+renderAll();
+mLabel.value='';
+mReading.value='';
+mAllowed.value='';
+toast(label + ' logged at ' + fmtKm(reading) + ' km', 'success', performUndo);
+}
+
+function handleClrMeter() {
+    if ( !confirm('Reset all meter readings?')) return;
+    saveStateForUndo();
+    meterLogs=[];
+    save();
+    renderAll();
+    toast('Meter reset.', 'info', performUndo);
+}
+
+/* ---- Expense handlers ---- */
+function handleAddExp() {
+    var name=eName.value.trim();
+    var amount=parseFloat(eAmount.value);
+    var desc=eDesc.value.trim();
+
+    if ( !name) {
+        shake(eName);
+        toast('Please enter a name.', 'warn');
+        return;
+    }
+
+    if (isNaN(amount)||amount<=0) {
+        shake(eAmount);
+        toast('Enter a valid amount.', 'warn');
+        return;
+    }
+
+    saveStateForUndo();
+
+    expenses.push({
+        id: Date.now(), name: name, amount: amount, desc: desc
+    });
+save();
+renderAll();
+eName.value='';
+eAmount.value='';
+eDesc.value='';
+eName.focus();
+toast('₹' +fmtNum(amount)+' added for ' +name, 'success', performUndo);
+}
+
+function handleClrExp() {
+    if ( !confirm('Remove all expenses?')) return;
+    saveStateForUndo();
+    expenses=[];
+    save();
+    renderAll();
+    toast('All expenses cleared.', 'info', performUndo);
+}
+
+function delExp(id) {
+    saveStateForUndo();
+
+    expenses=expenses.filter(function(e) {
+            return e.id !==id;
+        });
+    save();
+    renderAll();
+    toast('Expense removed.', 'info', performUndo);
+}
+
+function delLog(id) {
+    saveStateForUndo();
+
+    meterLogs=meterLogs.filter(function(m) {
+            return m.id !==id;
+        });
+    save();
+    renderAll();
+    toast('Reading removed.', 'info', performUndo);
+}
+
+/* ---- Render ---- */
+function renderAll() {
+    renderMeter();
+    renderExpList();
+    renderStats();
+}
+
+function renderMeter() {
+    btnClrMeter.style.display=meterLogs.length ? '': 'none';
+
+    if ( !meterLogs.length) {
+        dispStart.textContent='—';
+        dispUsed.textContent='0';
+        dispLeft.textContent='—';
+        barSection.style.display='none';
+        meterLog.innerHTML='<div class="empty-state"><i class="fa-solid fa-gauge"></i><span>No readings yet — log your starting odometer above</span></div>';
+        return;
+    }
+
+    var first=meterLogs[0];
+    var last=meterLogs[meterLogs.length - 1];
+    var allowed=first.allowed;
+    var used=last.reading - first.reading;
+    if (used < 0) used=0;
+    var left=allowed - used;
+    var pct=Math.min((used / allowed) * 100, 100);
+    var rawPct=(used / allowed) * 100;
+
+    dispStart.textContent=fmtKm(first.reading);
+    animNum(dispUsed, 0, used);
+    var leftEl=dispLeft;
+
+    if (left < 0) {
+        leftEl.className='km-val over';
+        leftEl.textContent='-'+fmtKm(Math.abs(left));
+    }
+
+    else {
+        leftEl.className='km-val left';
+        animNum(leftEl, 0, left);
+    }
+
+    // bar
+    barSection.style.display='';
+    var cls=rawPct>=100 ? 'bar-fill over' : rawPct>=80 ? 'bar-fill warn' : 'bar-fill';
+    barFill.className=cls;
+    var pctCls=rawPct>=100 ? 'bar-pct over' : rawPct>=80 ? 'bar-pct warn' : 'bar-pct';
+    barPct.className=pctCls;
+
+    requestAnimationFrame(function() {
+            requestAnimationFrame(function() {
+                    barFill.style.width=pct + '%';
+                    animPct(barPct, 0, rawPct);
+                });
+        });
+
+    if (rawPct >=100) {
+        barStatus.innerHTML='<b style="color:var(--danger)">⚠️ Over by '+fmtKm(Math.abs(left))+' km</b>Allowed: '+fmtKm(allowed)+' km';
+    }
+
+    else if (rawPct >=80) {
+        barStatus.innerHTML='<b style="color:var(--warn)">⚡ '+fmtKm(left)+' km left</b>Allowed: '+fmtKm(allowed)+' km';
+    }
+
+    else {
+        barStatus.innerHTML='<b style="color:var(--success)">✅ '+fmtKm(left)+' km remaining</b>Allowed: '+fmtKm(allowed)+' km';
+    }
+
+    // log list
+    var html='';
+
+    for (var i=0; i < meterLogs.length; i++) {
+        var m=meterLogs[i];
+        var kmSince=i===0 ? 0: m.reading - meterLogs[i-1].reading;
+        html+='<div class="log-item" style="animation-delay:'+(i*.04)+'s">'+'<div class="log-num">'+(i+1)+'</div>'+'<div class="log-info">'+'<div class="log-title">'+esc(m.label)+'</div>'+'<div class="log-sub">'+(i===0?'Starting point':'+' +(kmSince>=0?fmtKm(kmSince):fmtKm(kmSince))+' km from prev')+' &nbsp;·&nbsp; Allowed: '+fmtKm(m.allowed)+' km</div>'+'</div>'+'<div class="log-km">'+fmtKm(m.reading)+' km</div>'+'<button class="del-btn" data-mid="'+m.id+'" title="Remove"><i class="fa-solid fa-xmark"></i></button>'+'</div>';
+    }
+
+    meterLog.innerHTML=html;
+
+    meterLog.querySelectorAll('[data-mid]').forEach(function(btn) {
+            btn.addEventListener('click', function() {
+                    delLog(Number(btn.getAttribute('data-mid')));
+                });
+        });
+}
+
+function renderExpList() {
+    btnClrExp.style.display=expenses.length ? '': 'none';
+
+    if ( !expenses.length) {
+        expList.innerHTML='<div class="empty-state"><i class="fa-solid fa-wallet"></i><span>No expenses yet — add one above</span></div>';
+        return;
+    }
+
+    var html='';
+
+    for(var i=0; i<expenses.length; i++) {
+        var e=expenses[i],
+        d=Math.min(i*.04, .22);
+        html+='<div class="exp-item" style="animation-delay:'+d+'s">'+'<div class="avatar">'+esc(e.name.charAt(0))+'</div>'+'<div class="iinfo"><div class="iname">'+esc(e.name)+'</div>'+'<div class="idesc">'+(e.desc?esc(e.desc):'&mdash;')+'</div></div>'+'<div class="iamt">₹'+fmtNum(e.amount)+'</div>'+'<button class="del-btn" data-eid="'+e.id+'" title="Delete"><i class="fa-solid fa-xmark"></i></button>'+'</div>';
+    }
+
+    expList.innerHTML=html;
+
+    expList.querySelectorAll('[data-eid]').forEach(function(btn) {
+            btn.addEventListener('click', function() {
+                    delExp(Number(btn.getAttribute('data-eid')));
+                });
+        });
+}
+
+var _ps= {
+    total: 0, split:0, people:0
+}
+
+;
+
+function renderStats() {
+    var total=0;
+
+    var names= {}
+
+    ;
+
+    expenses.forEach(function(e) {
+            total+=e.amount;
+        });
+    var people=13;
+    var split=total/people;
+    animVal(sTotal, _ps.total, total, true);
+    animVal(sSplit, _ps.split, split, true);
+    animVal(sPeople, _ps.people, people, false);
+
+    _ps= {
+        total: total, split:split, people:people
+    }
+
+    ;
+}
+
+/* ---- Animations ---- */
+function animNum(el, from, to) {
+    var dur=550,
+    s=performance.now();
+
+    (function tick(now) {
+            var p=Math.min((now-s)/dur, 1), e=p<.5?2*p*p:1-Math.pow(-2*p+2, 2)/2, v=from+(to-from)*e;
+            el.textContent=fmtKm(Math.round(v));
+            if(p<1) requestAnimationFrame(tick);
+        })(s);
+}
+
+function animVal(el, from, to, rupee) {
+    var dur=550,
+    s=performance.now();
+
+    (function tick(now) {
+            var p=Math.min((now-s)/dur, 1), e=p<.5?2*p*p:1-Math.pow(-2*p+2, 2)/2, v=from+(to-from)*e;
+            el.textContent=rupee?'₹' +fmtNum(v):Math.round(v).toString();
+            if(p<1) requestAnimationFrame(tick);
+        })(s);
+}
+
+function animPct(el, from, to) {
+    var dur=600,
+    s=performance.now();
+
+    (function tick(now) {
+            var p=Math.min((now-s)/dur, 1), e=p<.5?2*p*p:1-Math.pow(-2*p+2, 2)/2, v=from+(to-from)*e;
+            el.textContent=v.toFixed(1)+'%';
+            if(p<1) requestAnimationFrame(tick);
+        })(s);
+}
+
+/* ---- Toast ---- */
+function toast(msg, type, onUndo) {
+    var ic= {
+        success: {
+            c: 'fa-solid fa-circle-check', col:'var(--cyan)'
+        }
+
+        ,
+        info: {
+            c: 'fa-solid fa-circle-info', col:'var(--blue)'
+        }
+
+        ,
+        warn: {
+            c: 'fa-solid fa-triangle-exclamation', col:'var(--warn)'
+        }
+    }
+
+    ;
+    var t=ic[type]||ic.success;
+    tIco.className=t.c;
+    tIco.style.color=t.col;
+    tMsg.textContent=msg;
+
+    var tUndoBtn=$('t-undo');
+
+    if(onUndo && tUndoBtn) {
+        tUndoBtn.style.display='inline-block';
+        _undoAction=onUndo;
+    }
+
+    else if(tUndoBtn) {
+        tUndoBtn.style.display='none';
+        _undoAction=null;
+    }
+
+    toastEl.classList.add('show');
+    clearTimeout(_toastTmr);
+    var dur=onUndo ? 5000 : 2800;
+
+    _toastTmr=setTimeout(function() {
+            toastEl.classList.remove('show');
+        }
+
+        , dur);
+}
+
+/* ---- Utils ---- */
+function fmtKm(n) {
+    return Math.round(n).toLocaleString('en-IN');
+}
+
+function fmtNum(n) {
+    return n===Math.floor(n)?n.toLocaleString('en-IN'):n.toLocaleString('en-IN', {
+        minimumFractionDigits:2, maximumFractionDigits:2
+    });
+}
+
+function esc(s) {
+    return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g,'&quot;'); }
+ function shake(el) {
+            el.style.transition='none'; el.style.transform='translateX(-7px)';
+
+            setTimeout(function() {
+                    el.style.transition='transform .35s cubic-bezier(.34,1.56,.64,1)'; el.style.transform='translateX(0)';
+                }
+
+                , 60);
+        }
+
+        </script> </body> </html>
